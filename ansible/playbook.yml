@@ -1,0 +1,40 @@
+---
+- hosts: 127.0.0.1
+  become: yes
+  tasks:
+  - name: "Update all yum packages"
+    yum: name=* state=latest
+    ignore_errors: true
+
+  - name: "Install libselinux-python"
+    yum: name=libselinux-python state=latest
+
+  - name: "Create apache group"
+    group: name=apache gid=501
+
+  - name: "Create apache user"
+    user: name=apache groups=apache uid=501
+
+  - name: "Change /var/www owner"
+    file: name=/var/www state=directory owner=apache group=apache recurse=yes mode=0775
+
+  - name: "Install Apache"
+    yum: name=httpd state=latest
+
+  - name: "Install Perl"
+    yum: name=perl state=latest
+
+  - name: "Register RPMforge repository"
+    yum: name=http://pkgs.repoforge.org/rpmforge-release/rpmforge-release-0.5.3-1.el7.rf.x86_64.rpm state=present
+
+  - name: "Install perl-FCGI"
+    yum: name=perl-FCGI enablerepo=rpmforge state=present
+
+  - name: "Install mod_fastcgi"
+    yum: name=http://pkgs.repoforge.org/mod_fastcgi/mod_fastcgi-2.4.6-2.el6.rf.x86_64.rpm state=present
+
+  - name: "Copy mod_fastcgi.conf"
+    copy: src=../vagrant_conf/mod_fastcgi.conf dest=/etc/httpd/conf.d/mod_fastcgi.conf owner=root group=root mode=0644
+
+  - name: "Restart apache"
+    service: name=httpd state=restarted
