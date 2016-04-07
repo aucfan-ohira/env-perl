@@ -1,0 +1,5 @@
+.vagrant
+.idea
+www/*
+!www/cgi-bin
+!www/html
